@@ -137,6 +137,7 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
                         setSearchState({ ...searchState, <%= fieldName %>: e.target.value })
                       }} placeholder={translate('<%= `${i18nKeyPrefix}.search.${fieldName}` %>')} />
                     </InputGroup>
+                    <br/>
                     <%_ } _%>
 
                     <InputGroup className="d-flex justify-content-end">
