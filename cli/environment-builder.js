@@ -117,7 +117,7 @@ module.exports = class EnvironmentBuilder {
       // Verify jhipster generators namespace.
       assert(
         generator.namespace.startsWith(`${CLI_NAME}:`),
-        `Error on the registered namespace ${generator.namespace}, make sure your folder is called generator-jhipster.`
+        `CLI Name: ${CLI_NAME}. Error on the registered namespace ${generator.namespace}, make sure your folder is called generator-jhipster.`
       );
     });
     return this;

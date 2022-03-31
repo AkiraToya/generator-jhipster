@@ -1,6 +1,6 @@
 {
-  "name": "generator-jhipster",
-  "version": "7.7.0",
+  "name": "generator-jhipster-daryl",
+  "version": "7.7.12",
   "description": "Spring Boot + Angular/React/Vue in one handy generator",
   "keywords": [
     "yeoman-generator",
@@ -19,7 +19,9 @@
     "JDL"
   ],
   "homepage": "https://www.jhipster.tech/",
-  "bugs": "https://github.com/jhipster/generator-jhipster/issues",
+  "bugs": {
+    "url": "https://github.com/jhipster/generator-jhipster/issues"
+  },
   "repository": {
     "type": "git",
     "url": "git://github.com/jhipster/generator-jhipster.git"
@@ -29,11 +31,7 @@
     "url": "https://opencollective.com/generator-jhipster"
   },
   "license": "Apache-2.0",
-  "author": {
-    "name": "Julien Dubois",
-    "email": "",
-    "url": "https://github.com/jdubois"
-  },
+  "author": "Julien Dubois (https://github.com/jdubois)",
   "exports": {
     ".": {
       "import": "./lib/index.mjs",
@@ -53,7 +51,7 @@
   },
   "main": "lib/index.js",
   "bin": {
-    "jhipster": "cli/jhipster.js"
+    "jhipsterd": "cli/jhipster.js"
   },
   "files": [
     "cli",
@@ -66,7 +64,7 @@
     "!**/*.spec.?(c|m)js"
   ],
   "scripts": {
-    "completion": "tabtab install --name jhipster --auto",
+    "completion": "tabtab install --name jhipsterd --auto",
     "ejs-lint": "mocha test/ejslint.js",
     "ejslint": "ejslint",
     "eslint": "eslint . --ext .js,.cjs,.mjs",

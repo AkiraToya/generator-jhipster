@@ -21,7 +21,7 @@ import React, { useState, useEffect } from 'react';
 import InfiniteScroll from 'react-infinite-scroll-component';
 <%_ } _%>
 import { Link, RouteComponentProps } from 'react-router-dom';
-import { Button, <% if (searchEngine) { %>Input, InputGroup, FormGroup, Form, Row, Col, <% } %>Table } from 'reactstrap';
+import { Button, Card, CardBody, Col, Form, FormGroup, Input, InputGroup, InputGroupText, Label, Row, Table, UncontrolledCollapse } from 'reactstrap';
 import {
   <%_ if (blobFields.length > 0) { _%>
     <%_ if (fieldsContainBlobOrImage) { _%>
@@ -37,7 +37,8 @@ import {
   , JhiPagination, JhiItemCount
   <%_ }
   } _%>
-} from 'react-jhipster';
+  , translate
+} from 'react-jhipster-daryl';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { APP_DATE_FORMAT, APP_LOCAL_DATE_FORMAT } from 'app/config/constants';
@@ -61,226 +62,41 @@ import {
 <%_ } _%>
 } from './<%= entityFileName %>.reducer';
 
-export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>) => {
-  const dispatch = useAppDispatch();
+import { useSearchPaginationFunction } from 'app/shared/util/useSearchPaginationFunction-utils';
 
-<%_ if (searchEngine) { _%>
-  const [search, setSearch] = useState('');
-<%_ } _%>
-<%_ if (!paginationNo) { _%>
-  const [paginationState, setPaginationState] = useState(overridePaginationStateWithQueryParams(getSortState(props.location, ITEMS_PER_PAGE, '<%= primaryKey.name %>'), props.location.search));
-<%_ } _%>
-<%_ if (paginationInfiniteScroll) { _%>
-  const [sorting, setSorting] = useState(false);
-<%_ } _%>
+import { useAccessControl } from 'app/shared/auth/useAccessControl';
+import { CAPABILITIES } from 'app/shared/auth/capabilites';
+import NoAccessPage from 'app/shared/error/no-access-page';
+import { AuthAddButton } from 'app/shared/element/AuthAddButton';
+import { AuthEditButton } from 'app/shared/element/AuthEditButton';
+import { AuthDeleteButton } from 'app/shared/element/AuthDeleteButton';
+import { code } from './<%= entityFileName %>-code';
+
+export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>) => {
+  const { hasAccess } = useAccessControl()
+  if (!hasAccess(code, CAPABILITIES.VIEW)) return (<NoAccessPage />);
+
+  const baseSearch: I<%= entityReactName %> = { 
+    <%_ for (field of fields) { _%>
+      <%= field.fieldName %>: undefined,
+    <%_ } _%>
+  }
+
+  const {searchState, setSearchState,
+    paginationState, handlePagination,
+    startSearching, clear,
+    handleSyncList, sort, dispatch
+  } = useSearchPaginationFunction({
+    baseSearch,
+    props,
+    getEntities
+  });
 
   const <%= entityInstance %>List = useAppSelector(state => state.<%= entityReactState %>.entities);
   const loading = useAppSelector(state => state.<%= entityReactState %>.loading);
   <%_ if (!paginationNo) { _%>
   const totalItems = useAppSelector(state => state.<%= entityReactState %>.totalItems);
   <%_ } _%>
-  <%_ if (paginationInfiniteScroll) { _%>
-  const links = useAppSelector(state => state.<%= entityReactState %>.links);
-  const entity = useAppSelector(state => state.<%= entityReactState %>.entity);
-  const updateSuccess = useAppSelector(state => state.<%= entityReactState %>.updateSuccess);
-  <%_ } _%>
-
-<%_ if (paginationPagination || paginationInfiniteScroll || !paginationNo && !paginationInfiniteScroll) { _%>
-  const getAllEntities = () => {
-  <%_ if (searchEngine) { _%>
-    if (search) {
-      dispatch(
-        searchEntities({
-          query: search,
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`
-        })
-      );
-    } else {
-      dispatch(
-        getEntities({
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-    }
-  <%_ } else { _%>
-      dispatch(
-        getEntities({
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-  <%_ } _%>
-  };
-<%_ } _%>
-
-<%_ if (paginationInfiniteScroll) { _%>
-  const resetAll = () => {
-    dispatch(reset());
-    setPaginationState({
-      ...paginationState,
-      activePage: 1
-    });
-    dispatch(getEntities({}));
-  };
-<%_ } _%>
-
-<%_ if (paginationNo || paginationInfiniteScroll) { _%>
-  useEffect(() => {
-  <%_ if (!paginationNo) { _%>
-    resetAll();
-  <%_ } else { _%>
-    dispatch(getEntities({}));
-  <%_ } _%>
-  }, []);
-<%_ } _%>
-
-<%_ if (searchEngine) { _%>
-  const startSearching = (e) => {
-    if (search) {
-  <%_ if (paginationInfiniteScroll) { _%>
-      dispatch(reset());
-  <%_ } _%>
-  <%_ if (!paginationNo) { _%>
-      setPaginationState({
-        ...paginationState,
-        activePage: 1
-      });
-      dispatch(
-        searchEntities({
-          query: search,
-          page: paginationState.activePage - 1,
-          size: paginationState.itemsPerPage,
-          sort: `${paginationState.sort},${paginationState.order}`,
-        })
-      );
-  <%_ } else { _%>
-      dispatch(searchEntities({query: search}));
-  <%_ } _%>
-    }
-    e.preventDefault();
-  };
-
-  const clear = () => {
-  <%_ if (paginationInfiniteScroll) { _%>
-    dispatch(reset());
-  <%_ } _%>
-    setSearch('');
-  <%_ if (!paginationNo) { _%>
-    setPaginationState({
-      ...paginationState,
-      activePage: 1
-    });
-  <%_ } _%>
-    dispatch(getEntities({}));
-  };
-
-  const handleSearch = event => setSearch(event.target.value);
-<%_ } _%>
-
-<%_ if (paginationInfiniteScroll) { _%>
-  useEffect(() => {
-    if (updateSuccess) {
-      resetAll();
-    }
-  }, [updateSuccess]);
-
-  useEffect(() => {
-    getAllEntities()
-  }, [paginationState.activePage]);
-
-  const handleLoadMore = () => {
-    if ((window as any).pageYOffset > 0) {
-      setPaginationState({
-        ...paginationState,
-        activePage: paginationState.activePage + 1
-      });
-    }
-  };
-<%_ } _%>
-
-<%_ if (!paginationNo) { _%>
-  <%_ if (paginationPagination) { _%>
-  const sortEntities = () => {
-    getAllEntities();
-    const endURL = `?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}`;
-    if (props.location.search !== endURL) {
-      props.history.push(`${props.location.pathname}${endURL}`);
-    }
-  };
-  <%_ } _%>
-
-  useEffect(() => {
-  <%_ if (paginationInfiniteScroll) { _%>
-    if (sorting) {
-      getAllEntities();
-      setSorting(false);
-    }
-  <%_ } else { _%>
-    sortEntities();
-  <%_ } _%>
-  }, [<% if (paginationInfiniteScroll) { %>sorting<% } else { %>paginationState.activePage, paginationState.order, paginationState.sort<% } %><%_ if (searchEngine) { _%>, search<% } %>]);
-
-  <%_ if (paginationPagination) { _%>
-  useEffect(() => {
-    const params = new URLSearchParams(props.location.search);
-    const page = params.get('page');
-    const sort = params.get(SORT);
-    if (page && sort) {
-      const sortSplit = sort.split(',');
-      setPaginationState({
-        ...paginationState,
-        activePage: +page,
-        sort: sortSplit[0],
-        order: sortSplit[1]
-      });
-    }
-  }, [props.location.search]);
-  <%_ } _%>
-
-  const sort = p => () => {
-  <%_ if (paginationInfiniteScroll) { _%>
-    dispatch(reset());
-    setPaginationState({
-      ...paginationState,
-      activePage: 1,
-      order: paginationState.order === ASC ? DESC : ASC,
-      sort: p
-    });
-    setSorting(true);
-  <%_ } else { _%>
-    setPaginationState({
-      ...paginationState,
-      order: paginationState.order === ASC ? DESC : ASC,
-      sort: p
-    });
-  <%_ } _%>
-  };
-
-  <%_ if (paginationPagination) { _%>
-  const handlePagination = currentPage =>
-    setPaginationState({
-      ...paginationState,
-      activePage: currentPage
-    });
-  <%_ } _%>
-<%_ } _%>
-
-  const handleSyncList = () => {
-<%_ if (paginationNo) { _%>
-      dispatch(getEntities({}));
-<%_ } _%>
-<%_ if (paginationPagination) { _%>
-      sortEntities();
-<%_ } _%>
-<%_ if (paginationInfiniteScroll) { _%>
-      resetAll();
-<%_ } _%>
-  };
 
   const { match } = props;
 
@@ -289,39 +105,58 @@ export const <%= entityReactName %> = (props: RouteComponentProps<{url: string}>
       <h2 id="<%= entityFileName %>-heading" data-cy="<%= entityClass %>Heading">
         <Translate contentKey="<%= i18nKeyPrefix %>.home.title"><%= entityClassPluralHumanized %></Translate>
         <div className="d-flex justify-content-end">
+          <Button color="primary" id="search-toggler" className="me-2">
+            <FontAwesomeIcon icon="search" /><%= `{` %>' '<%= `}` %>
+            <Translate contentKey="global.form.search">Search</Translate>
+          </Button>
           <Button className="me-2" color="info" onClick={handleSyncList} disabled={loading}>
             <FontAwesomeIcon icon="sync" spin={loading} /> <Translate contentKey="<%= i18nKeyPrefix %>.home.refreshListLabel">Refresh List</Translate>
           </Button>
 <%_ if (!readOnly) { _%>
-            <Link to="/<%= entityPage %>/new" className="btn btn-primary jh-create-entity" id="jh-create-entity" data-cy="entityCreateButton">
-              <FontAwesomeIcon icon="plus" />&nbsp;
-              <Translate contentKey="<%= i18nKeyPrefix %>.home.createLabel">
-                Create new <%= entityClassHumanized %>
-              </Translate>
-            </Link>
+          <AuthAddButton baseUrl={match.url} enabled={hasAccess(code, CAPABILITIES.ADD)}>
+            <Translate contentKey="<%= i18nKeyPrefix %>.home.createLabel">Create new <%= entityClassHumanized %></Translate>
+          </AuthAddButton>
 <%_ } _%>
         </div>
       </h2>
-<%_ if (searchEngine) { _%>
       <Row>
         <Col sm="12">
-          <Form onSubmit={startSearching}>
-            <FormGroup>
-              <InputGroup>
-                <Input type="text" name="search" defaultValue={search} onChange={handleSearch}
-              placeholder=<% if (enableTranslation) { %>{translate('<%= i18nKeyPrefix %>.home.search')}<% } else { %>"Search"<% } %>/>
-                <Button className="input-group-addon">
-                  <FontAwesomeIcon icon="search" />
-                </Button>
-                <Button type="reset" className="input-group-addon" onClick={clear}>
-                  <FontAwesomeIcon icon="trash" />
-                </Button>
-              </InputGroup>
-            </FormGroup>
-          </Form>
+          <UncontrolledCollapse toggler="#search-toggler">
+            <Card>
+              <CardBody>
+                <Form onSubmit={startSearching}>
+                  <FormGroup>
+                    <%_ for (field of fields) { 
+                      const fieldType=field.fieldType; 
+                      const fieldName=field.fieldName; 
+                      const fieldIsEnum=field.fieldIsEnum; 
+                    _%>
+                    <InputGroup>
+                      <InputGroupText>{translate('<%= field.fieldTranslationKey %>')}</InputGroupText>
+                      <Input type="text" name="search_<%= fieldName %>" defaultValue={searchState.<%= fieldName %>} onChange={(e)=> {
+                        setSearchState({ ...searchState, <%= fieldName %>: e.target.value })
+                      }} placeholder={translate('<%= `${i18nKeyPrefix}.search.${fieldName}` %>')} />
+                    </InputGroup>
+                    <%_ } _%>
+
+                    <InputGroup className="d-flex justify-content-end">
+                      <Button className='me-2 btn btn-danger' type="reset" onClick={clear}>
+                        <FontAwesomeIcon icon="trash" /><%= `{` %>' '<%= `}` %>
+                        <Translate contentKey="global.form.reset">Reset</Translate>
+                      </Button>
+                    
+                      <Button className='me-2 btn btn-info'>
+                        <FontAwesomeIcon icon="search" /><%= `{` %>' '<%= `}` %>
+                        <Translate contentKey="global.form.search">Search</Translate>
+                      </Button>
+                    </InputGroup>
+                  </FormGroup>
+                </Form>
+              </CardBody>
+            </Card>
+          </UncontrolledCollapse>
         </Col>
       </Row>
-<%_ } _%>
       <div className="table-responsive">
 <%_ if (paginationInfiniteScroll) { _%>
         <InfiniteScroll dataLength={<%= entityInstance %>List ? <%= entityInstance %>List.length : 0} 
@@ -451,12 +286,10 @@ _%>
                             <FontAwesomeIcon icon="eye" /> <span className="d-none d-md-inline" ><Translate contentKey="entity.action.view">View</Translate></span>
                           </Button>
 <%_ if (!readOnly) { _%>
-                          <Button tag={Link} to={`/<%= entityPage %>/${<%= entityInstance %>.<%= primaryKey.name %>}/edit<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`} color="primary" size="sm" data-cy="entityEditButton">
-                            <FontAwesomeIcon icon="pencil-alt" /> <span className="d-none d-md-inline"><Translate contentKey="entity.action.edit">Edit</Translate></span>
-                          </Button>
-                          <Button tag={Link} to={`/<%= entityPage %>/${<%= entityInstance %>.<%= primaryKey.name %>}/delete<%_ if (paginationPagination) { _%>?page=${paginationState.activePage}&sort=${paginationState.sort},${paginationState.order}<%_ } _%>`} color="danger" size="sm" data-cy="entityDeleteButton">
-                            <FontAwesomeIcon icon="trash" /> <span className="d-none d-md-inline"><Translate contentKey="entity.action.delete">Delete</Translate></span>
-                          </Button>
+                          <AuthEditButton baseUrl={match.url} id={<%= entityInstance %>.<%= primaryKey.name %>} paginationState={paginationState} enabled={hasAccess(code,
+                            CAPABILITIES.EDIT) } />
+                          <AuthDeleteButton baseUrl={match.url} id={<%= entityInstance %>.<%= primaryKey.name %>} paginationState={paginationState} enabled={hasAccess(code,
+                            CAPABILITIES.DELETE)} />
 <%_ } _%>
                         </div>
                       </td>

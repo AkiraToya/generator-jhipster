@@ -23,10 +23,10 @@ _%>
 import axios from 'axios';
 import { createAsyncThunk, isFulfilled, isPending, isRejected } from '@reduxjs/toolkit';
 <%_ if (paginationInfiniteScroll) { _%>
-import { loadMoreDataWhenScrolled, parseHeaderForLinks } from 'react-jhipster';
+import { loadMoreDataWhenScrolled, parseHeaderForLinks } from 'react-jhipster-daryl';
 <%_ } _%>
 
-import { cleanEntity } from 'app/shared/util/entity-utils';
+import { cleanEntity, getSearchQueries } from 'app/shared/util/entity-utils';
 import { IQueryParams, createEntitySlice, EntityState, serializeAxiosError } from 'app/shared/reducers/reducer.utils';
 import { I<%= entityReactName %>, defaultValue } from 'app/shared/model/<%= entityModelFileName %>.model';
 
@@ -66,12 +66,9 @@ export const searchEntities = createAsyncThunk(
 );
 
 <%_ } _%>
-export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ page, size, sort }: IQueryParams) => {
-  <%_ if (!paginationNo) { _%>
-  const requestUrl = `${apiUrl}${sort ? `?page=${page}&size=${size}&sort=${sort}&` : '?'}cacheBuster=${new Date().getTime()}`;
-  <%_ } else { _%>
-  const requestUrl = `${apiUrl}?cacheBuster=${new Date().getTime()}`;
-  <%_ } _%>
+export const getEntities = createAsyncThunk('<%= entityInstance %>/fetch_entity_list', async ({ query, page, size, sort }: IQueryParams) => {
+  const requestUrl = `${apiUrl}${sort ? `?_page=${page}&_limit=${size}&_sort=${sort.split(",")[0]}&_order=${sort.split(",")[1]}&` : '?'}` +
+    `cacheBuster=${new Date().getTime()}${getSearchQueries(query)}`;
   return axios.get<I<%= entityReactName %>[]>(requestUrl);
 });
 

@@ -176,6 +176,11 @@ const reactFiles = {
       path: REACT_DIR,
       templates: [
         {
+          file: 'entities/entity-code.ts',
+          method: 'processJsx',
+          renameTo: generator => `entities/${generator.entityFolderName}/${generator.entityFileName}-code.ts`,
+        },
+        {
           file: 'entities/entity-detail.tsx',
           method: 'processJsx',
           renameTo: generator => `entities/${generator.entityFolderName}/${generator.entityFileName}-detail.tsx`,

@@ -20,8 +20,8 @@
 const chalk = require('chalk');
 const _ = require('lodash');
 
-const CLI_NAME = 'jhipster';
-const GENERATOR_NAME = 'generator-jhipster';
+const CLI_NAME = 'jhipster-daryl';
+const GENERATOR_NAME = 'generator-jhipster-daryl';
 
 const SUCCESS_MESSAGE = 'Congratulations, JHipster execution is complete!';
 const SPONSOR_MESSAGE = 'Sponsored with ❤️  by @oktadev.';

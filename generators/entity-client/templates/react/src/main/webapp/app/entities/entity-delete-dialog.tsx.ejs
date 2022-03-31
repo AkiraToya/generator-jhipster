@@ -19,13 +19,21 @@
 import React, { useEffect, useState } from 'react';
 import { RouteComponentProps } from 'react-router-dom';
 import { Modal, ModalHeader, ModalBody, ModalFooter, Button } from 'reactstrap';
-import { Translate } from 'react-jhipster';
+import { Translate } from 'react-jhipster-daryl';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { useAppDispatch, useAppSelector } from 'app/config/store';
 import { getEntity, deleteEntity } from './<%= entityFileName %>.reducer';
 
+import { useAccessControl } from 'app/shared/auth/useAccessControl';
+import { CAPABILITIES } from 'app/shared/auth/capabilites';
+import NoAccessPage from 'app/shared/error/no-access-page';
+import { code } from './<%= entityFileName %>-code';
+
 export const <%= entityReactName %>DeleteDialog = (props: RouteComponentProps<{ id: string }>) => {
+  const { hasAccess } = useAccessControl()
+  if (!hasAccess(code, CAPABILITIES.DELETE)) return (<NoAccessPage />);
+
   const [loadModal, setLoadModal] = useState(false);
   const dispatch = useAppDispatch();
 

@@ -40,7 +40,7 @@ import {
   ValidatedField,
   ValidatedForm,
   <% if (fieldsContainBlobOrImage) { %> ValidatedBlobField,<% } %>
-} from 'react-jhipster';
+} from 'react-jhipster-daryl';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 import { convertDateTimeFromServer, convertDateTimeToServer, displayDefaultDateTime } from 'app/shared/util/date-utils';
@@ -108,10 +108,19 @@ import {
   reset
 } from './<%= entityFileName %>.reducer';
 
+import { useAccessControl } from 'app/shared/auth/useAccessControl';
+import { CAPABILITIES } from 'app/shared/auth/capabilites';
+import NoAccessPage from 'app/shared/error/no-access-page';
+import { code } from './<%= entityFileName %>-code';
+
 export const <%= entityReactName %>Update = (props: RouteComponentProps<{id: string}>) => {
   const dispatch = useAppDispatch();
 
   const [isNew] = useState(!props.match.params || !props.match.params.id);
+
+    const { hasAccess } = useAccessControl()
+    if (isNew && !hasAccess(code, CAPABILITIES.ADD)) return (<NoAccessPage />);
+    if (!isNew && !hasAccess(code, CAPABILITIES.EDIT)) return (<NoAccessPage />);
 
   <%_ otherEntityActions.forEach(val => { _%>
   const <%= val.instance %> = useAppSelector(state => state.<%= val.reducer %>);
